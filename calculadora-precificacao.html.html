@@ -1,0 +1,299 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de precificação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080C11;
+  --panel:#0C1219;
+  --panel-2:#0E161E;
+  --line:rgba(255,255,255,.07);
+  --line-2:rgba(255,255,255,.12);
+  --green:#2BD46B;
+  --green-dim:rgba(43,212,107,.30);
+  --green-wash:rgba(43,212,107,.06);
+  --amber:#E9A33A;
+  --red:#F0605A;
+  --tx:#E9EFF4;
+  --tx-2:#93A2AF;
+  --tx-3:#5A6874;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Inter",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(900px 480px at 88% -6%,rgba(43,212,107,.09),transparent 62%),
+                   radial-gradient(700px 400px at -8% 108%,rgba(43,212,107,.055),transparent 60%);
+  background-attachment:fixed;
+}
+.page{max-width:880px;margin:0 auto;padding:0 28px 72px}
+
+.top{display:flex;align-items:center;justify-content:space-between;padding:26px 0 34px}
+.mark{display:flex;align-items:center;gap:11px}
+.mark .glyph{width:26px;height:26px;border-radius:7px;background:var(--green);display:grid;place-items:center;flex:none}
+.mark .glyph svg{width:15px;height:15px;display:block}
+.mark .name{font-family:var(--mono);font-size:12.5px;font-weight:500;letter-spacing:.24em;color:#fff}
+.stamp{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--tx-3)}
+
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--green);margin:0 0 14px}
+h1{font-size:clamp(34px,5.6vw,52px);line-height:1.06;letter-spacing:-.022em;font-weight:700;margin:0 0 20px}
+h1 em{font-style:normal;color:var(--green)}
+.lede{font-size:16.5px;color:var(--tx-2);max-width:60ch;margin:0 0 40px}
+
+.rule{height:1px;background:var(--line);border:0;margin:0 0 30px}
+
+section{margin:0 0 46px;scroll-margin-top:20px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-3);margin:0 0 6px}
+h2{font-size:23px;font-weight:700;letter-spacing:-.014em;margin:0 0 6px}
+.h2-rule{height:1px;background:var(--line);margin:14px 0 22px}
+.note{font-size:14px;color:var(--tx-2);margin:0 0 18px}
+
+.tag{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+.tag i{display:block;width:16px;height:1px;background:var(--green);flex:none}
+.tag span{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--green)}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.opt{
+  appearance:none;text-align:left;cursor:pointer;font-family:var(--sans);color:var(--tx);
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+  transition:border-color .14s ease,background .14s ease;
+}
+.opt:hover{border-color:var(--line-2)}
+.opt:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.opt b{display:block;font-size:15px;font-weight:500;letter-spacing:-.005em}
+.opt small{display:block;font-family:var(--mono);font-size:11px;color:var(--tx-3);margin-top:5px;letter-spacing:.04em}
+.opt[aria-pressed="true"]{background:var(--green-wash);border-color:var(--green-dim)}
+.opt[aria-pressed="true"] b{color:var(--green)}
+.opt[aria-pressed="true"] small{color:rgba(43,212,107,.66)}
+
+.slab{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.slab-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;min-width:210px;height:4px;border-radius:2px;
+  background:linear-gradient(var(--green),var(--green)) 0/var(--fill,25%) 100% no-repeat,rgba(255,255,255,.1);
+  cursor:pointer;
+}
+input[type=range]:focus-visible{outline:2px solid var(--green);outline-offset:6px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--green);border:3px solid var(--bg);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--green);border:3px solid var(--bg);cursor:pointer}
+.slab-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--green);min-width:130px;text-align:right;font-variant-numeric:tabular-nums}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:0 0 10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px 18px}
+.card .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-3);margin:0 0 9px}
+.card .val{font-family:var(--mono);font-size:26px;font-weight:500;letter-spacing:-.02em;margin:0;font-variant-numeric:tabular-nums}
+.card .sub{font-size:12.5px;color:var(--tx-3);margin:5px 0 0}
+.card.hero-card{background:var(--green-wash);border-color:var(--green-dim)}
+.card.hero-card .val{color:var(--green)}
+
+.verdict{border:1px solid var(--line);border-left:2px solid var(--green);border-radius:0 10px 10px 0;background:var(--panel-2);padding:20px 22px;margin:18px 0 0}
+.verdict .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-3);margin:0 0 9px}
+.verdict .val{font-family:var(--mono);font-size:25px;font-weight:500;margin:0 0 8px;color:var(--green)}
+.verdict p{font-size:14.5px;color:var(--tx-2);margin:0;max-width:66ch}
+
+table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14px}
+thead th{background:var(--green-wash);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);text-align:left;font-weight:400;padding:12px 16px}
+tbody td{border-top:1px solid var(--line);padding:12px 16px;color:var(--tx-2);vertical-align:top}
+tbody td:first-child{color:var(--tx);font-family:var(--mono);font-size:13px}
+
+ul.checks{list-style:none;padding:0;margin:0}
+ul.checks li{position:relative;padding:0 0 0 22px;margin:0 0 11px;color:var(--tx-2);font-size:14.5px}
+ul.checks li::before{content:"";position:absolute;left:2px;top:9px;border:5px solid transparent;border-left-color:var(--green)}
+ul.checks li b{color:var(--tx);font-weight:500}
+
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding:22px 0 0;margin-top:52px}
+.foot span{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--tx-3)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+@media (max-width:620px){.page{padding:0 18px 56px}.slab-val{min-width:0;text-align:left}}
+</style>
+
+<div class="page">
+  <div class="top">
+    <div class="mark">
+      <span class="glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#08110B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h13"/><path d="M13 6l6 6-6 6"/></svg>
+      </span>
+      <span class="name">DEV&middot;CLUB</span>
+    </div>
+    <span class="stamp">PRECIFICAÇÃO &middot; V1</span>
+  </div>
+
+  <p class="eyebrow">// Ferramenta de apoio &middot; módulo de vendas</p>
+  <h1>Quanto cobrar por um<br>agente e por um <em>site.</em></h1>
+  <p class="lede">Responda quatro perguntas sobre o cliente. A calculadora devolve o preço de implantação, a mensalidade, o piso que você nunca deve furar e o quanto pedir ainda dentro da reunião.</p>
+  <hr class="rule">
+
+  <section>
+    <p class="kicker">// Etapa 01</p>
+    <h2>O que você vai vender</h2>
+    <div class="h2-rule"></div>
+    <div class="opts" id="g-prod">
+      <button class="opt" type="button" data-v="agente" aria-pressed="true"><b>Agente de IA</b><small>atendimento no whatsapp</small></button>
+      <button class="opt" type="button" data-v="site" aria-pressed="false"><b>Site</b><small>página única ou institucional</small></button>
+      <button class="opt" type="button" data-v="ambos" aria-pressed="false"><b>Os dois juntos</b><small>site + agente</small></button>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">// Etapa 02</p>
+    <h2>Porte do cliente</h2>
+    <div class="h2-rule"></div>
+    <p class="note">Se você não souber o faturamento, pergunte na reunião: quantos clientes ele atende por mês e quanto cada um paga.</p>
+    <div class="opts" id="g-porte">
+      <button class="opt" type="button" data-v="0" aria-pressed="true"><b>Pequeno</b><small>fatura até 50 mil/mês</small></button>
+      <button class="opt" type="button" data-v="1" aria-pressed="false"><b>Médio</b><small>de 50 a 200 mil/mês</small></button>
+      <button class="opt" type="button" data-v="2" aria-pressed="false"><b>Grande</b><small>acima de 200 mil/mês</small></button>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">// Etapa 03</p>
+    <h2>Complexidade do trabalho</h2>
+    <div class="h2-rule"></div>
+    <div class="opts" id="g-comp">
+      <button class="opt" type="button" data-v="0" aria-pressed="true"><b>Simples</b><small>1 canal, nada integrado</small></button>
+      <button class="opt" type="button" data-v="1" aria-pressed="false"><b>Média</b><small>2 canais ou agenda</small></button>
+      <button class="opt" type="button" data-v="2" aria-pressed="false"><b>Alta</b><small>integra com o sistema dele</small></button>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">// Etapa 04</p>
+    <h2>Quanto o cliente economiza por mês</h2>
+    <div class="h2-rule"></div>
+    <p class="note">Este é o número que você levantou no passo 6 do script, fazendo a conta na frente dele. Sem esse número o preço vira chute.</p>
+    <div class="slab">
+      <div class="slab-row">
+        <input type="range" id="eco" min="0" max="20000" step="500" value="5000" aria-label="Economia mensal do cliente em reais">
+        <span class="slab-val" id="eco-out">R$ 5.000</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <div class="tag"><i></i><span>Resultado</span></div>
+    <div class="cards">
+      <div class="card hero-card"><p class="lbl">Implantação</p><p class="val" id="o-impl">R$ 1.000</p><p class="sub" id="o-parc">ou 3x de R$ 333</p></div>
+      <div class="card hero-card"><p class="lbl">Mensalidade</p><p class="val" id="o-mens">R$ 497</p><p class="sub">cobrada todo mês</p></div>
+      <div class="card"><p class="lbl">Esse cliente em 12 meses</p><p class="val" id="o-ano">R$ 6.964</p><p class="sub">implantação + 12 mensalidades</p></div>
+    </div>
+    <div class="cards">
+      <div class="card"><p class="lbl">Piso, nunca venda abaixo</p><p class="val" id="o-piso">R$ 1.000</p><p class="sub">preço de tabela do curso</p></div>
+      <div class="card"><p class="lbl">Pedir na hora da reunião</p><p class="val" id="o-call">R$ 497</p><p class="sub">1 mensalidade ou 1/5 da implantação</p></div>
+      <div class="card"><p class="lbl">Desconto máximo</p><p class="val" id="o-desc">R$ 0</p><p class="sub">margem até bater no piso</p></div>
+    </div>
+    <div class="verdict" id="verdict">
+      <p class="lbl">// Diagnóstico</p>
+      <p class="val" id="o-pay">o cliente se paga em 1 mês</p>
+      <p id="o-diag">Preço saudável. Apresente com segurança e não ofereça desconto antes de ouvir a objeção.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="tag"><i></i><span>Como a conta é feita</span></div>
+    <table>
+      <thead><tr><th>Item</th><th>Fórmula</th></tr></thead>
+      <tbody>
+        <tr><td>Implantação do agente</td><td>R$ 1.000 &times; complexidade (1x / 1,5x / 2x) &times; porte (1x / 1,3x / 1,8x)</td></tr>
+        <tr><td>Mensalidade</td><td>R$ 497 &times; porte (1x / 1,6x / 2,4x) &times; complexidade (1x / 1,2x / 1,4x)</td></tr>
+        <tr><td>Site</td><td>R$ 1.200 &times; complexidade (1x / 1,8x / 2,8x) &times; porte (1x / 1,2x / 1,5x)</td></tr>
+        <tr><td>Retorno do cliente</td><td>implantação &divide; (economia mensal &minus; mensalidade)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="tag"><i></i><span>Regras que não se quebram</span></div>
+    <ul class="checks">
+      <li><b>Nunca venda abaixo do piso.</b> Preço baixo não fecha mais venda, só atrai cliente que dá trabalho e cancela no terceiro mês.</li>
+      <li><b>Só abra o preço depois da conta.</b> Se o cliente não confirmou quanto está perdendo, qualquer valor vai parecer caro.</li>
+      <li><b>Desconto se troca, não se dá.</b> Peça algo em troca: pagamento à vista, depoimento em vídeo ou indicação de dois contatos.</li>
+      <li><b>Se o diagnóstico ficar vermelho, o problema não é o preço.</b> Volte e levante mais dor, ou reduza o escopo do que você vai entregar.</li>
+      <li><b>Cobre alguma coisa ainda na reunião.</b> Cliente que só vai pagar amanhã costuma sumir hoje.</li>
+    </ul>
+  </section>
+
+  <div class="foot">
+    <span>// CALCULADORA DE PREÇOS &middot; USO INTERNO</span>
+    <span>DevClub</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var st={prod:"agente",porte:0,comp:0};
+  var eco=document.getElementById("eco");
+  var brl=function(n){return "R$ "+Math.round(n).toLocaleString("pt-BR");};
+  var set=function(id,txt){document.getElementById(id).textContent=txt;};
+
+  function group(id,key,cast){
+    var g=document.getElementById(id);
+    g.addEventListener("click",function(e){
+      var b=e.target.closest(".opt");
+      if(!b) return;
+      g.querySelectorAll(".opt").forEach(function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");
+      st[key]=cast(b.dataset.v);
+      calc();
+    });
+  }
+  group("g-prod","prod",String);
+  group("g-porte","porte",Number);
+  group("g-comp","comp",Number);
+  eco.addEventListener("input",calc);
+
+  function calc(){
+    var cI=[1,1.5,2][st.comp], pI=[1,1.3,1.8][st.porte];
+    var pM=[1,1.6,2.4][st.porte], cM=[1,1.2,1.4][st.comp];
+    var cS=[1,1.8,2.8][st.comp], pS=[1,1.2,1.5][st.porte];
+    var impl=0, mens=0, piso=0;
+    if(st.prod!=="site"){ impl+=1000*cI*pI; mens+=497*pM*cM; piso+=1000; }
+    if(st.prod!=="agente"){ impl+=1200*cS*pS; piso+=1200; }
+    impl=Math.round(impl/50)*50;
+    mens=Math.round(mens/10)*10;
+
+    var v=parseInt(eco.value,10);
+    eco.style.setProperty("--fill",(v/20000*100).toFixed(1)+"%");
+    set("eco-out",brl(v));
+
+    set("o-impl",brl(impl));
+    set("o-parc","ou 3x de "+brl(impl/3));
+    set("o-mens",mens?brl(mens):"não tem");
+    document.getElementById("o-mens").nextElementSibling.textContent = mens?"cobrada todo mês":"site é pagamento único";
+    set("o-ano",brl(impl+mens*12));
+    set("o-piso",brl(piso)+(mens?" + R$ 497":""));
+    set("o-call",brl(Math.max(mens,impl/5)));
+    set("o-desc",brl(Math.max(0,impl-piso)));
+
+    var liq=v-mens, box=document.getElementById("verdict");
+    var pay=document.getElementById("o-pay"), dia=document.getElementById("o-diag");
+    var green="#2BD46B", amber="#E9A33A", red="#F0605A";
+    function paint(c,txt,msg){
+      box.style.borderLeftColor=c; pay.style.color=c;
+      pay.textContent=txt; dia.textContent=msg;
+    }
+    if(liq<=0){
+      paint(red,"esse cliente nunca se paga",
+        "A economia que você levantou é menor que a mensalidade. Ou a conta do passo 6 ficou fraca, ou esse cliente é pequeno demais para esse preço. Não apresente ainda.");
+    }else{
+      var m=impl/liq;
+      var txt=m<1?"o cliente se paga em menos de 1 mês":"o cliente se paga em "+Math.ceil(m)+(Math.ceil(m)>1?" meses":" mês");
+      if(m<=3){
+        paint(green,txt,"Preço saudável. Apresente com segurança e não ofereça desconto antes de ouvir a objeção.");
+      }else if(m<=6){
+        paint(amber,txt,"Zona de atenção. É vendável, mas prepare a quebra de objeção de preço antes de entrar na reunião.");
+      }else{
+        paint(red,txt,"Caro para esse cliente. Volte no passo 6 e levante mais dor, ou reduza o escopo da entrega.");
+      }
+    }
+  }
+  calc();
+})();
+</script>
